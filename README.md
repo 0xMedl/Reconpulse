@@ -16,7 +16,7 @@
 ## 🚀 Quick Start
 
 ```bash
-git clone git@github.com:0xMedl/Reconpulse.git
+git clone https://github.com/0xMedl/Reconpulse.git
 cd Reconpulse
 pip install -r requirements.txt
 echo "INTELBASE_API_KEY=your_api_key" > .env
