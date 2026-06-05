@@ -1,31 +1,44 @@
+#!/usr/bin/env python3
 """
-Helper functions
+Utility helper functions
 """
+
 import json
 import csv
 from pathlib import Path
 from datetime import datetime
 
+
 def count_data_points(data):
-    """Count all data points recursively"""
-    count = 0
-    def recursive_count(obj):
-        nonlocal count
+    """Recursively count all non-empty data points in the investigation data"""
+    point_count = 0
+    
+    def _traverse(obj):
+        nonlocal point_count
+        
         if isinstance(obj, dict):
-            for v in obj.values():
-                if v is not None and v != "" and v != []:
-                    count += 1
-                recursive_count(v)
+            for value in obj.values():
+                # Count non-empty values
+                if value is not None and value != "" and value != []:
+                    point_count += 1
+                # Recurse into nested structures
+                _traverse(value)
+        
         elif isinstance(obj, list):
             for item in obj:
-                recursive_count(item)
-    recursive_count(data)
-    return count
+                _traverse(item)
+    
+    _traverse(data)
+    return point_count
+
 
 def sanitize_filename(email):
-    """Make email safe for filenames"""
-    return email.replace('@', '_').replace('.', '_')
+    """Convert email to safe filename by replacing special characters"""
+    # Replace @ with _ and . with _
+    safe_name = email.replace('@', '_').replace('.', '_')
+    return safe_name
+
 
 def get_timestamp():
-    """Get formatted timestamp"""
+    """Get current timestamp in standardized format"""
     return datetime.now().strftime("%Y%m%d_%H%M%S")

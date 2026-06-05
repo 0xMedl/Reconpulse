@@ -1,14 +1,14 @@
-"""
-IntelBase API Client
-"""
+#!/usr/bin/env python3
+
 import requests
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from rich.console import Console
 
 console = Console()
 
+
 class IntelBaseClient:
-    """Handle all API communications"""
+    """Handles communication with IntelBase API"""
     
     def __init__(self, api_key, base_url="https://api.intelbase.is"):
         self.api_key = api_key
@@ -20,7 +20,7 @@ class IntelBaseClient:
         })
     
     def lookup_email(self, email, timeout_ms=60000):
-        """Lookup email with ALL data"""
+        """Perform email lookup with full data extraction"""
         url = f"{self.base_url}/lookup/email"
         
         payload = {
@@ -36,18 +36,23 @@ class IntelBaseClient:
             BarColumn(),
             console=console
         ) as progress:
-            task = progress.add_task("[cyan]Extracting intelligence data...", total=100)
+            task = progress.add_task("[cyan]Extracting intelligence...", total=100)
             
             try:
-                response = self.session.post(url, json=payload, timeout=60)
+                resp = self.session.post(url, json=payload, timeout=60)
                 progress.update(task, advance=50)
                 
-                if response.status_code == 200:
-                    data = response.json()
+                if resp.status_code == 200:
+                    result_data = resp.json()
                     progress.update(task, advance=50)
-                    return {"success": True, "data": data}
+                    return {"success": True, "data": result_data}
                 else:
-                    return {"success": False, "error": f"API Error {response.status_code}"}
+                    err_msg = f"API returned status {resp.status_code}"
+                    return {"success": False, "error": err_msg}
                     
+            except requests.exceptions.Timeout:
+                return {"success": False, "error": "Request timed out"}
+            except requests.exceptions.ConnectionError:
+                return {"success": False, "error": "Connection error"}
             except Exception as e:
-                return {"success": False, "error": str(e)}
+                return {"success": False, "error": f"Error: {str(e)}"}
